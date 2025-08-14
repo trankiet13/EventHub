@@ -52,8 +52,11 @@ const ButtonComponent = (props: Props) => {
           textStyles,
           {
             marginLeft: icon ? 12 : 0,
+            fontSize: 16,
           },
         ]}
+        flex={icon && iconFlex === 'right' ? 1 : 0}
+        font={fontFamilies.medium}
       ></TextComponent>
       {icon && iconFlex == 'right' && icon}
     </TouchableOpacity>
