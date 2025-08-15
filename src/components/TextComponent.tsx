@@ -1,8 +1,8 @@
-import { View, Text, TextStyle, StyleProp } from 'react-native';
+import {View, Text, StyleProp, TextStyle, Platform} from 'react-native';
 import React from 'react';
-import { appColors } from '../constants/appColors';
-import { fontFamilies } from '../constants/fontFamilies';
-import { globalStyles } from '../styles/globalStyles';
+import {appColors} from '../constants/appColors';
+import {fontFamilies} from '../constants/fontFamilies';
+import {globalStyles} from '../styles/globalStyles';
 
 interface Props {
   text: string;
@@ -10,25 +10,33 @@ interface Props {
   size?: number;
   flex?: number;
   font?: string;
-  title?: boolean;
   styles?: StyleProp<TextStyle>;
+  title?: boolean;
+  numberOfLine?: number;
 }
+
 const TextComponent = (props: Props) => {
-  const { text, size, flex, font, color, styles, title } = props;
+  const {text, size, flex, font, color, styles, title, numberOfLine} = props;
+
+  const fontSizeDefault = Platform.OS === 'ios' ? 16 : 14;
+
   return (
     <Text
+      numberOfLines={numberOfLine}
       style={[
         globalStyles.text,
         {
           color: color ?? appColors.text,
           flex: flex ?? 0,
-          fontSize: size ? size : title ? 24 : 14,
-          fontFamily: font ? font : fontFamilies.regular,
+          fontSize: size ? size : title ? 24 : fontSizeDefault,
+          fontFamily: font
+            ? font
+            : title
+            ? fontFamilies.medium
+            : fontFamilies.regular,
         },
         styles,
-      ]}
-    >
-      {' '}
+      ]}>
       {text}
     </Text>
   );

@@ -3,28 +3,39 @@ import React from 'react';
 import {
   ButtonComponent,
   SectionComponent,
+  SpaceComponent,
   TextComponent,
 } from '../../../components';
 import { appColors } from '../../../constants/appColors';
 import { fontFamilies } from '../../../constants/fontFamilies';
-import { Google } from 'iconsax-react-native';
+import { Facebook, Google } from '../../../assets/svgs';
 
 const SocialLogin = () => {
   return (
-    <SectionComponent>
+    <SectionComponent >
       <TextComponent
         styles={{ textAlign: 'center' }}
-        text="OR"
+        text='OR'
         color={appColors.gray4}
         size={16}
         font={fontFamilies.medium}
       ></TextComponent>
+      <SpaceComponent height={25}></SpaceComponent>
       <ButtonComponent
         text="Login with Google"
+        textColor={appColors.text}
         type="primary"
         color={appColors.white}
-        icon={<Google size={24} color={appColors.primary}></Google>}
         iconFlex="left"
+        icon={<Google />}
+      ></ButtonComponent>
+       <ButtonComponent
+        text="Login with Facebook"
+        textColor={appColors.text}
+        type="primary"
+        color={appColors.white}
+        iconFlex="left"
+        icon={<Facebook />}
       ></ButtonComponent>
     </SectionComponent>
   );

@@ -16,11 +16,20 @@ import { appColors } from '../../constants/appColors';
 import ContainerComponent from '../../components/ContainerComponent';
 import { fontFamilies } from '../../constants/fontFamilies';
 import SocialLogin from './components/SocialLogin';
+import authenticationAPI from '../../apis/authApi';
 
-const LoginScreen = () => {
+const LoginScreen = ( {navigation} : any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRemembered, setIsRemembered] = useState(true);
+  const handleLogin = async () => {
+    try {
+      const res = await authenticationAPI.HandleAuthentication('hello');
+      console.log(res);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   return (
     <ContainerComponent isImageBackground isScroll>
       <SectionComponent
@@ -69,20 +78,20 @@ const LoginScreen = () => {
             <TextComponent text="Remember me"></TextComponent>
           </RowComponent>
           <ButtonComponent text="Forget Password? "
-          onPress={ () => {}}
+          onPress={ () => {navigation.navigate('ForgotPassword') }}
           type='text'></ButtonComponent>
         </RowComponent>
       </SectionComponent>
       <SpaceComponent height={16} />
       <SectionComponent >
-        <ButtonComponent text="SIGN IN" type="primary"></ButtonComponent>
+        <ButtonComponent onPress ={handleLogin}text="SIGN IN" type="primary"></ButtonComponent>
       </SectionComponent>
       <SpaceComponent height={16} />
       <SocialLogin />
       <SectionComponent>
         <RowComponent justify='center'>
-          <TextComponent text = "Don't have an account?"></TextComponent>
-          <ButtonComponent type='link' text="Sign up" ></ButtonComponent>
+          <TextComponent text = "Don't have an account? "></TextComponent>
+          <ButtonComponent type='link' text="Sign up" onPress={ () => navigation.navigate('SignUpScreen') }></ButtonComponent>
         </RowComponent>
       </SectionComponent>
     </ContainerComponent>
