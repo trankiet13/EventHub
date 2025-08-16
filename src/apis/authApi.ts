@@ -1,13 +1,12 @@
-import { appInfo } from '../constants/appinfor';
 import axiosClient from './axiosClient';
 
 class AuthAPI {
   HandleAuthentication = async (
     url: string,
-    method?: 'get' | 'post' | 'put' | 'delete',
     data?: any,
+    method?: 'get' | 'post' | 'put' | 'delete',
   ) => {
-    return await axiosClient(`${appInfo.BASE_URL}/auth/${url}`, {
+    return await axiosClient(`/auth/${url}`, {
       method: method ?? 'get',
       data,
     });

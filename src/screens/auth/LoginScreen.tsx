@@ -22,14 +22,14 @@ const LoginScreen = ( {navigation} : any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRemembered, setIsRemembered] = useState(true);
-  const handleLogin = async () => {
-    try {
-      const res = await authenticationAPI.HandleAuthentication('hello');
-      console.log(res);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  // const handleLogin = async () => {
+  //   try {
+  //     const res = await authenticationAPI.HandleAuthentication('hello');
+  //     console.log(res);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
   return (
     <ContainerComponent isImageBackground isScroll>
       <SectionComponent
@@ -84,7 +84,7 @@ const LoginScreen = ( {navigation} : any) => {
       </SectionComponent>
       <SpaceComponent height={16} />
       <SectionComponent >
-        <ButtonComponent onPress ={handleLogin}text="SIGN IN" type="primary"></ButtonComponent>
+        <ButtonComponent text="SIGN IN" type="primary"></ButtonComponent>
       </SectionComponent>
       <SpaceComponent height={16} />
       <SocialLogin />

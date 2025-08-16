@@ -1,5 +1,5 @@
 import { View, Text, Image, Switch } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ButtonComponent from '../../components/ButtonComponent';
@@ -16,79 +16,413 @@ import { appColors } from '../../constants/appColors';
 import ContainerComponent from '../../components/ContainerComponent';
 import { fontFamilies } from '../../constants/fontFamilies';
 import SocialLogin from './components/SocialLogin';
+import { LoadingModal } from '../../modals';
+import authenticationAPI from '../../apis/authApi';
+import { Validate } from '../../utils/validate';
+import { useDispatch } from 'react-redux';
+import { addAuth } from '../../redux/reducers/authReducer';
 
+interface ErrorMessages {
+  email: string;
+  password: string;
+  confirmPassword: string;
+} 
 const initValue = {
   username: '',
   email: '',
   password: '',
   confirmPassword: '',
-}
-const SignUpScreen = ( {navigation} : any) => {
+};
+const SignUpScreen = ({ navigation }: any) => {
+  const [errorMessage, setErrorMessage] = useState<any>();
   const [values, setValues] = useState(initValue);
-  const handleChangeValue = (key: string, valye:string) => {
-    const data : any = {...values};
-    data[key] = valye;
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDisable, setIsDisable] = useState(false);
+  
+  const dispatch = useDispatch();
+  useEffect(() => {
+    if (
+      !errorMessage ||
+      (errorMessage &&
+        (errorMessage.email ||
+          errorMessage.password ||
+          errorMessage.confirmPassword)) ||
+      !values.email ||
+      !values.password ||
+      !values.confirmPassword
+    ) {
+      setIsDisable(true);
+    } else {
+      setIsDisable(false);
+    }
+  }, [errorMessage, values]);
+  const handleChangeValue = (key: string, value: string) => {
+    const data: any = { ...values };
+    data[key] = value;
     setValues(data);
+  };
+  const formValidator = (key: string) => {
+    const data = {...errorMessage};
+    let message = ``;
+
+    switch (key) {
+      case 'email':
+        if (!values.email) {
+          message = `Email is required!!!`;
+        } else if (!Validate.email(values.email)) {
+          message = 'Email is not invalid!!';
+        } else {
+          message = '';
+        }
+
+        break;
+
+      case 'password':
+        message = !values.password ? `Password is required!!!` : '';
+        break;
+
+      case 'confirmPassword':
+        if (!values.confirmPassword) {
+          message = `Please type confirm password!!`;
+        } else if (values.confirmPassword !== values.password) {
+          message = 'Password is not match!!!';
+        } else {
+          message = '';
+        }
+
+        break;
+    }
+
+    data[`${key}`] = message;
+
+    setErrorMessage(data);
+  };
+  // const handleRegister = async () => {
+  //   const api = `/verification`;
+  //   setIsLoading(true);
+  //   try {
+  //     const res = await authenticationAPI.HandleAuthentication(
+  //       api,
+  //       {email: values.email},
+  //       'post',
+  //     );
+
+  //     setIsLoading(false);
+
+  //     navigation.navigate('Verification', {
+  //       code: res.data.code,
+  //       ...values,
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //     setIsLoading(false);
+  //   }
+  //   finally {
+  //   setIsLoading(false);
+  // }
+  // };
+  const handleRegister = async () => {
+    setIsLoading(true);
+    try {
+      const res = await authenticationAPI.HandleAuthentication('register', values, 'post');
+      dispatch(addAuth(res.data));
+      await AsyncStorage.setItem('auth', JSON.stringify(res.data));
+      setIsLoading(false);
+    } 
+    catch (error) {
+      console.error('Register error:', error);
+
+    }
+     finally {
+    setIsLoading(false); // ✅ luôn tắt loading sau khi try/catch xong
   }
+  };
+  
+
   return (
-    <ContainerComponent isImageBackground isScroll back >
-    
-      <SectionComponent>
-        <TextComponent title size={24} text="Sign up"></TextComponent>
-        <SpaceComponent height={21} />
-        <InputComponent
-          value={values.username}
-          placeholder="Full name"
-          onChange={val => handleChangeValue('username', val)}
-          allowClear
-          affix={<User size={22} color={appColors.gray} />}
-        ></InputComponent>
-        <InputComponent
-          value={values.email}
-          placeholder="abc@gmail.com"
-          onChange={val => handleChangeValue('email', val)}
-          allowClear
-          affix={<Sms size={22} color={appColors.gray} />}
-        ></InputComponent>
-        <InputComponent
-          value={values.password}
-          placeholder="Password"
-          onChange={val => handleChangeValue('password', val)}
-          allowClear
-          affix={<Lock size={22} color={appColors.gray} />}
-          isPassword
-        ></InputComponent>
-        <InputComponent
-          value={values.confirmPassword}
-          placeholder="Confirm password"
-          onChange={val => handleChangeValue('ConfiemPassword', val)}
-          isPassword
-          allowClear
-          affix={<Lock size={22} color={appColors.gray} />}
-        ></InputComponent>
-        {/* <InputComponent
-          value={password}
-          placeholder="Password"
-          onChange={val => setPassword(val)}
-          // isPassword
-          allowClear
-          affix={<Lock size={22} color={appColors.gray} />}
-        ></InputComponent> */}
-      </SectionComponent>
-      <SpaceComponent height={16} />
-      <SectionComponent >
-        <ButtonComponent text="SIGN UP" type="primary"></ButtonComponent>
-      </SectionComponent>
-      <SpaceComponent height={16} />
-      <SocialLogin />
-      <SectionComponent>
-        <RowComponent justify="center">
-          <TextComponent text="Don't have an account?"></TextComponent>
-          <ButtonComponent type="link" text="Sign up" onPress={ () => navigation.navigate('LoginScreen') }></ButtonComponent>
-        </RowComponent>
-      </SectionComponent>
-    </ContainerComponent>
+    <>
+      <ContainerComponent isImageBackground isScroll back>
+        <SectionComponent>
+          <TextComponent title size={24} text="Sign up"></TextComponent>
+          <SpaceComponent height={21} />
+          <InputComponent
+            value={values.username}
+            placeholder="Full name"
+            onChange={val => handleChangeValue('username', val)}
+            allowClear
+            affix={<User size={22} color={appColors.gray} />}
+          ></InputComponent>
+          <InputComponent
+            value={values.email}
+            placeholder="abc@gmail.com"
+            onChange={val => handleChangeValue('email', val)}
+            allowClear
+            affix={<Sms size={22} color={appColors.gray} />}
+          ></InputComponent>
+          <InputComponent
+            value={values.password}
+            placeholder="Password"
+            onChange={val => handleChangeValue('password', val)}
+            allowClear
+            affix={<Lock size={22} color={appColors.gray} />}
+            isPassword
+          ></InputComponent>
+          <InputComponent
+            value={values.confirmPassword}
+            placeholder="Confirm password"
+            onChange={val => handleChangeValue('confirmPassword', val)}
+            isPassword
+            allowClear
+            affix={<Lock size={22} color={appColors.gray} />}
+          ></InputComponent>
+        </SectionComponent>
+        {errorMessage && (
+          <SectionComponent>
+            {Object.keys(errorMessage).map(
+              (error, index) =>
+                errorMessage[`${error}`] && (
+                  <TextComponent
+                    text={errorMessage[`${error}`]}
+                    key={`error${index}`}
+                    color={appColors.danger}
+                  />
+                ),
+            )}
+          </SectionComponent>
+        )}
+        <SpaceComponent height={16} />
+        <SectionComponent>
+          <ButtonComponent
+            onPress={handleRegister}
+            text="SIGN UP"
+            type="primary"
+            // disable={isDisable}
+          ></ButtonComponent>
+        </SectionComponent>
+        <SpaceComponent height={16} />
+        <SocialLogin />
+        <SectionComponent>
+          <RowComponent justify="center">
+            <TextComponent text="Don't have an account?"></TextComponent>
+            <ButtonComponent
+              type="link"
+              text="Sign up"
+              onPress={() => navigation.navigate('LoginScreen')}
+            ></ButtonComponent>
+          </RowComponent>
+        </SectionComponent>
+      </ContainerComponent>
+      <LoadingModal visible={isLoading}></LoadingModal>
+    </>
   );
 };
 
 export default SignUpScreen;
+// import {Lock, Sms, User} from 'iconsax-react-native';
+// import React, {useEffect, useState} from 'react';
+// import {useDispatch} from 'react-redux';
+// import {
+//   ButtonComponent,
+//   ContainerComponent,
+//   InputComponent,
+//   RowComponent,
+//   SectionComponent,
+//   SpaceComponent,
+//   TextComponent,
+// } from '../../components';
+// import {appColors} from '../../constants/appColors';
+// import {LoadingModal} from '../../modals';
+// import {Validate} from '../../utils/validate';
+// import SocialLogin from './components/SocialLogin';
+// import authenticationAPI from '../../apis/authApi';
+
+// interface ErrorMessages {
+//   email: string;
+//   password: string;
+//   confirmPassword: string;
+// }
+
+// const initValue = {
+//   username: '',
+//   email: '',
+//   password: '',
+//   confirmPassword: '',
+// };
+
+// const SignUpScreen = ({navigation}: any) => {
+//   const [values, setValues] = useState(initValue);
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [errorMessage, setErrorMessage] = useState<any>();
+//   const [isDisable, setIsDisable] = useState(true);
+
+//   const dispatch = useDispatch();
+
+//   useEffect(() => {
+//     if (
+//       !errorMessage ||
+//       (errorMessage &&
+//         (errorMessage.email ||
+//           errorMessage.password ||
+//           errorMessage.confirmPassword)) ||
+//       !values.email ||
+//       !values.password ||
+//       !values.confirmPassword
+//     ) {
+//       setIsDisable(true);
+//     } else {
+//       setIsDisable(false);
+//     }
+//   }, [errorMessage, values]);
+
+//   const handleChangeValue = (key: string, value: string) => {
+//     const data: any = {...values};
+
+//     data[`${key}`] = value;
+
+//     setValues(data);
+//   };
+
+//   const formValidator = (key: string) => {
+//     const data = {...errorMessage};
+//     let message = ``;
+
+//     switch (key) {
+//       case 'email':
+//         if (!values.email) {
+//           message = `Email is required!!!`;
+//         } else if (!Validate.email(values.email)) {
+//           message = 'Email is not invalid!!';
+//         } else {
+//           message = '';
+//         }
+
+//         break;
+
+//       case 'password':
+//         message = !values.password ? `Password is required!!!` : '';
+//         break;
+
+//       case 'confirmPassword':
+//         if (!values.confirmPassword) {
+//           message = `Please type confirm password!!`;
+//         } else if (values.confirmPassword !== values.password) {
+//           message = 'Password is not match!!!';
+//         } else {
+//           message = '';
+//         }
+
+//         break;
+//     }
+
+//     data[`${key}`] = message;
+
+//     setErrorMessage(data);
+//   };
+
+//   const handleRegister = async () => {
+//     const api = `verification`;
+//     setIsLoading(true);
+//     try {
+//       const res = await authenticationAPI.HandleAuthentication(
+//         api,
+//         {email: values.email},
+//         'post',
+//       );
+
+//       setIsLoading(false);
+
+//       navigation.navigate('Verification', {
+//         code: res.data.code,
+//         ...values,
+//       });
+//     } catch (error) {
+//       console.log("API error:", JSON.stringify(error, null, 2));
+//       setIsLoading(false);
+//     }
+//     finally {
+//   setIsLoading(false);
+// }
+//   };
+
+//   return (
+//     <>
+//       <ContainerComponent isImageBackground isScroll back>
+//         <SectionComponent>
+//           <TextComponent size={24} title text="Sign up" />
+//           <SpaceComponent height={21} />
+//           <InputComponent
+//             value={values.username}
+//             placeholder="Full name"
+//             onChange={val => handleChangeValue('username', val)}
+//             allowClear
+//             affix={<User size={22} color={appColors.gray} />}
+//           />
+//           <InputComponent
+//             value={values.email}
+//             placeholder="abc@email.com"
+//             onChange={val => handleChangeValue('email', val)}
+//             allowClear
+//             affix={<Sms size={22} color={appColors.gray} />}
+//             onEnd={() => formValidator('email')}
+//           />
+//           <InputComponent
+//             value={values.password}
+//             placeholder="Password"
+//             onChange={val => handleChangeValue('password', val)}
+//             isPassword
+//             allowClear
+//             affix={<Lock size={22} color={appColors.gray} />}
+//             onEnd={() => formValidator('password')}
+//           />
+//           <InputComponent
+//             value={values.confirmPassword}
+//             placeholder="Confirm password"
+//             onChange={val => handleChangeValue('confirmPassword', val)}
+//             isPassword
+//             allowClear
+//             affix={<Lock size={22} color={appColors.gray} />}
+//             onEnd={() => formValidator('confirmPassword')}
+//           />
+//         </SectionComponent>
+
+//         {errorMessage && (
+//           <SectionComponent>
+//             {Object.keys(errorMessage).map(
+//               (error, index) =>
+//                 errorMessage[`${error}`] && (
+//                   <TextComponent
+//                     text={errorMessage[`${error}`]}
+//                     key={`error${index}`}
+//                     color={appColors.danger}
+//                   />
+//                 ),
+//             )}
+//           </SectionComponent>
+//         )}
+//         <SpaceComponent height={16} />
+//         <SectionComponent>
+//           <ButtonComponent
+//             onPress={handleRegister}
+//             text="SIGN UP"
+//             disable={isDisable}
+//             type="primary"
+//           />
+//         </SectionComponent>
+//         <SocialLogin />
+//         <SectionComponent>
+//           <RowComponent justify="center">
+//             <TextComponent text="Don’t have an account? " />
+//             <ButtonComponent
+//               type="link"
+//               text="Sign in"
+//               onPress={() => navigation.navigate('LoginScreen')}
+//             />
+//           </RowComponent>
+//         </SectionComponent>
+//       </ContainerComponent>
+//       <LoadingModal visible={isLoading} />
+//     </>
+//   );
+// };
+
+// export default SignUpScreen;
