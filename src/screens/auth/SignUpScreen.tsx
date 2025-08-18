@@ -26,7 +26,7 @@ interface ErrorMessages {
   email: string;
   password: string;
   confirmPassword: string;
-} 
+}
 const initValue = {
   username: '',
   email: '',
@@ -38,7 +38,7 @@ const SignUpScreen = ({ navigation }: any) => {
   const [values, setValues] = useState(initValue);
   const [isLoading, setIsLoading] = useState(false);
   const [isDisable, setIsDisable] = useState(false);
-  
+
   const dispatch = useDispatch();
   useEffect(() => {
     if (
@@ -62,7 +62,7 @@ const SignUpScreen = ({ navigation }: any) => {
     setValues(data);
   };
   const formValidator = (key: string) => {
-    const data = {...errorMessage};
+    const data = { ...errorMessage };
     let message = ``;
 
     switch (key) {
@@ -98,46 +98,34 @@ const SignUpScreen = ({ navigation }: any) => {
     setErrorMessage(data);
   };
   // const handleRegister = async () => {
-  //   const api = `/verification`;
   //   setIsLoading(true);
   //   try {
-  //     const res = await authenticationAPI.HandleAuthentication(
-  //       api,
-  //       {email: values.email},
-  //       'post',
-  //     );
-
-  //     setIsLoading(false);
-
-  //     navigation.navigate('Verification', {
-  //       code: res.data.code,
-  //       ...values,
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
+  //     const res = await authenticationAPI.HandleAuthentication('register', values, 'post');
+  //     dispatch(addAuth(res.data));
+  //     await AsyncStorage.setItem('auth', JSON.stringify(res.data));
   //     setIsLoading(false);
   //   }
-  //   finally {
-  //   setIsLoading(false);
+  //   catch (error) {
+  //     console.error('Register error:', error);
+
+  //   }
+  //    finally {
+  //   setIsLoading(false); // ✅ luôn tắt loading sau khi try/catch xong
   // }
   // };
   const handleRegister = async () => {
-    setIsLoading(true);
+    const api = `verification`;
     try {
-      const res = await authenticationAPI.HandleAuthentication('register', values, 'post');
-      dispatch(addAuth(res.data));
-      await AsyncStorage.setItem('auth', JSON.stringify(res.data));
-      setIsLoading(false);
-    } 
-    catch (error) {
-      console.error('Register error:', error);
-
+      const res = await authenticationAPI.HandleAuthentication(
+        api,
+        { email: values.email },
+        'post',
+      );
+      console.log('API response:', res);
+    } catch (error) {
+      console.log(error);
     }
-     finally {
-    setIsLoading(false); // ✅ luôn tắt loading sau khi try/catch xong
-  }
   };
-  
 
   return (
     <>
@@ -157,6 +145,7 @@ const SignUpScreen = ({ navigation }: any) => {
             placeholder="abc@gmail.com"
             onChange={val => handleChangeValue('email', val)}
             allowClear
+            onEnd={() => formValidator('email')}
             affix={<Sms size={22} color={appColors.gray} />}
           ></InputComponent>
           <InputComponent
@@ -166,6 +155,7 @@ const SignUpScreen = ({ navigation }: any) => {
             allowClear
             affix={<Lock size={22} color={appColors.gray} />}
             isPassword
+            onEnd={() => formValidator('password')}
           ></InputComponent>
           <InputComponent
             value={values.confirmPassword}
@@ -174,6 +164,7 @@ const SignUpScreen = ({ navigation }: any) => {
             isPassword
             allowClear
             affix={<Lock size={22} color={appColors.gray} />}
+            onEnd={() => formValidator('confirmPassword')}
           ></InputComponent>
         </SectionComponent>
         {errorMessage && (
@@ -196,7 +187,7 @@ const SignUpScreen = ({ navigation }: any) => {
             onPress={handleRegister}
             text="SIGN UP"
             type="primary"
-            // disable={isDisable}
+            disable={isDisable}
           ></ButtonComponent>
         </SectionComponent>
         <SpaceComponent height={16} />
