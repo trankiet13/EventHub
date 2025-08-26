@@ -20,6 +20,7 @@
     "axios": "^1.11.0",
     "eslint-plugin-import": "^2.32.0",
     "iconsax-react-native": "^0.0.8",
+    "nodemailer": "^7.0.5",
     "query-string": "^9.2.2",
     "react": "19.1.0",
     "react-native": "0.80.2",

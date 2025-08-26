@@ -4,10 +4,10 @@ import {
   ForgotPassword,
   LoginScreen,
   SignUpScreen,
-  Verication,
 } from '../screens';
 import OnBroadingScreen from '../screens/auth/OnBroadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Verification from '../screens/auth/Verification';
 
 const AuthNavigator = () => {
   // const [isExistingUser,setIsExistingUser] = useState(false);
@@ -33,7 +33,7 @@ const AuthNavigator = () => {
       ></Stack.Screen>
       <Stack.Screen name="LoginScreen" component={LoginScreen}></Stack.Screen>
       <Stack.Screen name="SignUpScreen" component={SignUpScreen}></Stack.Screen>
-      <Stack.Screen name="Verication" component={Verication}></Stack.Screen>
+      <Stack.Screen name="Verification" component={Verification}></Stack.Screen>
       <Stack.Screen name="ForgotPassword" component={ForgotPassword}
       ></Stack.Screen>
     </Stack.Navigator>
